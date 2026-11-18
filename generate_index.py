@@ -13,9 +13,9 @@ ROOT = Path(__file__).resolve().parent
 DECK_FILENAME_PATTERN = re.compile(r"chapter(\d+)_(kanji|words)\.html")
 
 
-def extract_array(source: str, name: str) -> str | None:
+def extract_config_array(source: str, key: str) -> str | None:
     match = re.search(
-        rf"^[ \t]*const\s+{re.escape(name)}\s*=\s*\[(.*?)^[ \t]*\];",
+        rf"^[ \t]*{re.escape(key)}:\s*\[(.*?)^[ \t]*\],?",
         source,
         re.MULTILINE | re.DOTALL,
     )
@@ -31,6 +31,7 @@ def japanese_speech_target(source: str) -> str:
         target,
     )
     target = re.sub(r"[()[\]{}（）［］｛｝〜～~]", "", target)
+    target = re.sub(r"\bX\b", "", target)
     target = re.sub(r"[/／|・、，,;；⇄]", " ", target)
     return " ".join(target.split())
 
@@ -38,6 +39,11 @@ def japanese_speech_target(source: str) -> str:
 def validate_decks(pages: list[Path]) -> None:
     errors: list[str] = []
     seen_storage_keys: dict[str, Path] = {}
+
+    if not (ROOT / "assets" / "styles.css").is_file():
+        errors.append("assets/styles.css is missing")
+    if not (ROOT / "assets" / "deck.js").is_file():
+        errors.append("assets/deck.js is missing")
 
     for page in pages:
         filename_match = DECK_FILENAME_PATTERN.fullmatch(page.name)
@@ -58,17 +64,26 @@ def validate_decks(pages: list[Path]) -> None:
         if not title_match or html.unescape(title_match.group(1).strip()) != expected_title:
             errors.append(f"{page.name}: <title> must be {expected_title!r}")
 
-        heading_match = re.search(r"<h1\b[^>]*>(.*?)</h1>", source, re.DOTALL)
+        if 'href="assets/styles.css"' not in source:
+            errors.append(f"{page.name}: must link assets/styles.css")
+        if 'src="assets/deck.js"' not in source:
+            errors.append(f"{page.name}: must load assets/deck.js")
+
+        type_match = re.search(r'\btype:\s*"([^"]*)"', source)
+        if not type_match or type_match.group(1) != deck_type:
+            errors.append(f"{page.name}: DECK_CONFIG.type must be {deck_type!r}")
+
+        heading_match = re.search(r'\bheading:\s*"([^"]*)"', source)
         if not heading_match or html.unescape(heading_match.group(1).strip()) != expected_heading:
-            errors.append(f"{page.name}: <h1> must be {expected_heading!r}")
+            errors.append(f"{page.name}: DECK_CONFIG.heading must be {expected_heading!r}")
 
         expected_storage_keys = {
-            "STORAGE_KEY": f"est_jp_flashcards_ch{chapter}_{deck_type}_v1",
-            "ORDER_STORAGE_KEY": f"est_jp_flashcards_ch{chapter}_{deck_type}_order_v1",
+            "storageKey": f"est_jp_flashcards_ch{chapter}_{deck_type}_v1",
+            "orderStorageKey": f"est_jp_flashcards_ch{chapter}_{deck_type}_order_v1",
         }
         for key_name, expected_key in expected_storage_keys.items():
             key_match = re.search(
-                rf'\bconst\s+{key_name}\s*=\s*"([^"]*)"',
+                rf'\b{key_name}:\s*"([^"]*)"',
                 source,
             )
             if not key_match or key_match.group(1) != expected_key:
@@ -82,13 +97,12 @@ def validate_decks(pages: list[Path]) -> None:
             else:
                 seen_storage_keys[expected_key] = page
 
-        cards = extract_array(source, "INITIAL_CARDS")
-        illustration_name = "CARD_ILLUSTRATIONS" if deck_type == "kanji" else "WORD_ILLUSTRATIONS"
-        illustrations = extract_array(source, illustration_name)
+        cards = extract_config_array(source, "cards")
+        illustrations = extract_config_array(source, "illustrations")
         if cards is None:
-            errors.append(f"{page.name}: INITIAL_CARDS array was not found")
+            errors.append(f"{page.name}: DECK_CONFIG.cards array was not found")
         if illustrations is None:
-            errors.append(f"{page.name}: {illustration_name} array was not found")
+            errors.append(f"{page.name}: DECK_CONFIG.illustrations array was not found")
         if cards is not None and illustrations is not None:
             card_ids = [
                 int(card_id)
@@ -122,19 +136,11 @@ def validate_decks(pages: list[Path]) -> None:
                     f"{page.name}: {len(card_ids)} cards but {illustration_count} illustrations"
                 )
 
-        speech_match = re.search(
-            r"function\s+getJapaneseSpeechText\(card\)\s*\{(.*?)^\s*\}",
-            source,
-            re.MULTILINE | re.DOTALL,
-        )
-        if not speech_match:
-            errors.append(f"{page.name}: getJapaneseSpeechText(card) was not found")
-        else:
-            speech_function = speech_match.group(1)
-            if "card.kanji" not in speech_function:
-                errors.append(f"{page.name}: getJapaneseSpeechText(card) must use card.kanji")
-            if "⇄" not in speech_function:
-                errors.append(f"{page.name}: speech separator regex must include ⇄")
+    deck_js_path = ROOT / "assets" / "deck.js"
+    if deck_js_path.is_file():
+        deck_js = deck_js_path.read_text(encoding="utf-8")
+        if "card.kanji" not in deck_js or "⇄" not in deck_js:
+            errors.append("assets/deck.js: getJapaneseSpeechText must use card.kanji and include ⇄")
 
     if errors:
         print("Deck validation failed:", file=sys.stderr)
@@ -260,13 +266,14 @@ if __name__ == "__main__":
         "--output-dir",
         type=Path,
         default=ROOT,
-        help="Output directory (HTML pages are copied here alongside the generated index).",
+        help="Output directory (HTML pages and assets are copied here alongside the generated index).",
     )
     args = parser.parse_args()
     pages = chapter_pages()
     validate_decks(pages)
     args.output_dir.mkdir(parents=True, exist_ok=True)
     if args.output_dir.resolve() != ROOT:
+        shutil.copytree(ROOT / "assets", args.output_dir / "assets", dirs_exist_ok=True)
         for page in pages:
             shutil.copy2(page, args.output_dir / page.name)
     (args.output_dir / "index.html").write_bytes(build_index(pages).encode("utf-8"))

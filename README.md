@@ -2,8 +2,7 @@
 
 This repository contains responsive, standalone HTML flashcard decks for
 studying Japanese from Estonian. Each deck includes its own card data,
-illustrations, study controls, and saved progress; no external JavaScript or
-illustration assets are required.
+illustrations, study controls, and saved progress; shared styling and study logic live in assets/styles.css and assets/deck.js, with no third-party dependencies.
 
 ## Current decks
 
