@@ -74,6 +74,6 @@ useful for local preview; the deployment workflow generates its own copy.
 
 Configure **Settings → Pages → Build and deployment → Source** as
 **GitHub Actions**. The published site is
-[madispoel.github.io/japanese](https://madispoel.github.io/japanese/).
+[japanesecatslearning.github.io/japanese](https://japanesecatslearning.github.io/japanese/).
 Changes appear online after they are committed to `main`, pushed to GitHub, and
 the Pages workflow completes successfully.
