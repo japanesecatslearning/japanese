@@ -40,6 +40,10 @@ illustrations, study controls, and saved progress; shared styling and study logi
 
 ## Creating a deck
 
+Use the `/create-flashcard-deck` workspace prompt in Copilot Chat for a
+parameterized deck-generation workflow. It asks for the chapter number, deck
+type, and raw card list.
+
 Use [chapter23_words.html](./chapter23_words.html) as the current words-deck
 example and [chapter23_kanji.html](./chapter23_kanji.html) as the current
 kanji-deck example. The detailed, task-triggered rules and validation checklist
