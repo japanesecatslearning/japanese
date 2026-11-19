@@ -493,17 +493,24 @@
     "一歩・二歩": "いっぽ にほ",
     "宿": "やど",
     "角": "かど",
-    "内": "うち"
+    "内": "うち",
+    "通": "とおり"
   };
+
+  function hasHiragana(text) {
+    return /[\p{Script=Hiragana}]/u.test(String(text || ""));
+  }
 
   function getJapaneseSpeechText(card) {
     if (typeof card.speech === "string" && card.speech.trim()) {
       return card.speech.trim();
     }
-    const rawSource = typeof card.kanji === "string" && card.kanji.trim()
-      ? card.kanji.trim()
-      : card.reading;
-    const source = SPEECH_OVERRIDES[rawSource] || rawSource;
+    const kanji = typeof card.kanji === "string" ? card.kanji.trim() : "";
+    const reading = typeof card.reading === "string" ? card.reading.trim() : "";
+    const rawSource = kanji && !hasHiragana(kanji)
+      ? kanji
+      : (reading || kanji);
+    const source = SPEECH_OVERRIDES[rawSource] || SPEECH_OVERRIDES[kanji] || rawSource;
     return source
       .split(/\bNB!/iu, 1)[0]
       .replace(/[(（](?:する|な|の)[)）]/gu, (match) => match.slice(1, -1))
