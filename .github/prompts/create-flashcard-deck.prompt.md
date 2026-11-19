@@ -63,10 +63,9 @@ Apply these rules:
 4. Keep particle hints in optional `particles`, never in `estonian`.
 5. Use an optional `speech` override for polyphonic or otherwise ambiguous readings when kana or normalization would produce the wrong pronunciation.
 6. Keep Estonian wording unchanged unless a disambiguation is appended in square brackets.
-7. Give every card exactly one matching illustration in `illustrations`; use original emoji or inline SVG, never copyrighted artwork or hotlinks.
+7. Give every card exactly one meaning-matched illustration in `illustrations`, with an accessible description. Use an actual emoji symbol or inline SVG; never use Japanese text/kanji as the image, a generic fallback icon, copyrighted artwork, or hotlinked images.
 8. Keep IDs sequential from 1.
 9. Use the deck-specific storage keys shown in the template.
 10. Validate card count, card order, ID sequence, illustration count, particle placement, and JavaScript syntax. Run `python generate_index.py` after creating the deck.
 
 Raw deck list:
-

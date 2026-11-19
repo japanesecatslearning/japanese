@@ -58,8 +58,9 @@ In short:
    Japanese forms, readings, and Estonian wording. Do not copy a separate
    English column. Put any clarification to a supplied Estonian meaning in
    square brackets after the original wording.
-3. Give every card one matching, original, accessible illustration. Keep it
-   inline in the HTML; do not hotlink images.
+3. Give every card one matching, original, accessible illustration. Use a
+   meaning-matched emoji or inline SVG—not Japanese text as an image or a
+   generic fallback icon. Do not hotlink images.
 4. Give each deck unique progress and order storage keys. Keep pronunciation,
    replay, keyboard, navigation, responsive, and accessibility behavior
    consistent with the examples.

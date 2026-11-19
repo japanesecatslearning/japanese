@@ -21,13 +21,14 @@ description: "Use when creating or updating Japanese Estonian vocabulary or kanj
 ## Illustrations and card behavior
 
 - Add exactly one matching, original illustration to `DECK_CONFIG.illustrations` for every card, in the same order. Check that the actual symbols and accessible `description` convey the card's meaning, not merely a loosely related theme.
-- Keep art self-contained as emoji (`symbol` + `detail`) or inline SVG (`customSvg`). Do not hotlink images or use copyrighted manga/anime artwork.
+- Keep art self-contained as a meaning-matched emoji (`symbol` + optional `detail`) or inline SVG (`customSvg`). An emoji illustration must use an actual emoji symbol, never Japanese text, a kanji glyph, or a generic placeholder. Do not rely on a renderer fallback to provide an icon.
+- Make the accessible `description` concise and specific to the card's meaning and illustration. Do not hotlink images or use copyrighted manga/anime artwork.
 - Give each deck unique `storageKey` (`est_jp_flashcards_ch<N>_<type>_v1`) and `orderStorageKey` (`est_jp_flashcards_ch<N>_<type>_order_v1`) values so study progress remains independent.
 
 ## Validation and publishing
 
 Before finishing:
 
-1. Compare card count, order, Japanese forms/readings, and Estonian wording against the supplied list. Check sequential IDs, one illustration per card, and particle hints absent from front-side meanings.
+1. Compare card count, order, Japanese forms/readings, and Estonian wording against the supplied list. Check sequential IDs, one meaning-matched illustration per card, accessible descriptions, actual emoji symbols (not text or placeholders) when using emoji, and particle hints absent from front-side meanings.
 2. Run `python generate_index.py` from the repository root; it validates deck filenames, titles, `DECK_CONFIG` keys, card IDs, illustration counts, and speech targets before regenerating `index.html`. Do not edit `index.html` manually.
 3. Commit and push only when the user asks to upload, publish, or otherwise requests it.
