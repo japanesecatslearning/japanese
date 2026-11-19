@@ -119,7 +119,7 @@
 
   document.getElementById("deck-heading").textContent = config.heading;
 
-  let cards = INITIAL_CARDS.map((card) => ({ ...card, inScope: true }));
+  let cards = INITIAL_CARDS.map((card) => ({ ...card, active: true, inScope: true }));
   let currentIndex = 0;
   let isFlipped = false;
   let allowManualPreview = false;
